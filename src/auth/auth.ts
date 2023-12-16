@@ -3,9 +3,9 @@ import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import pool from '../db';
 
-const router = express.Router();
+const authRouter = express.Router();
 
-router.post('/signup',
+authRouter.post('/signup',
   [
     body('username', 'Username is required').notEmpty(),
     body('email', 'Invalid email').isEmail(),
@@ -41,4 +41,4 @@ router.post('/signup',
     }
   });
 
-export default router;
+export default authRouter;
