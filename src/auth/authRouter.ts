@@ -9,7 +9,6 @@ const authRouter = express.Router();
 
 authRouter.post('/signup',
   [
-    body('username', 'Username is required').notEmpty(),
     body('email', 'Invalid email').isEmail(),
     body('password', 'Password must be at least 8 characters long').isLength({ min: 8 })
   ],
@@ -20,11 +19,11 @@ authRouter.post('/signup',
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { username, password, email } = req.body;
+      const { email, password } = req.body;
 
       const existingUser = await pool.query(
-        `SELECT * FROM users WHERE username = $1 OR email = $2`,
-        [username, email]);
+        `SELECT * FROM users WHERE email = $1`,
+        [email]);
 
       if (existingUser.rows.length > 0) {
         return res.status(409).send('User already exists');
@@ -33,8 +32,8 @@ authRouter.post('/signup',
       const hashedPassword = await bcrypt.hash(password, 12);
 
       await pool.query(
-        `INSERT INTO users (username, password, email) VALUES ($1, $2, $3)`,
-        [username, hashedPassword, email]);
+        `INSERT INTO users (email, password) VALUES ($1, $2)`,
+        [email, hashedPassword]);
 
       res.status(201).send('Signup successful');
     } catch (error) {
@@ -45,11 +44,11 @@ authRouter.post('/signup',
 
 authRouter.post('/login', async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     const userResult = await pool.query(
-      `SELECT * FROM users WHERE username = $1`,
-      [username]);
+      `SELECT * FROM users WHERE email = $1`,
+      [email]);
 
     if (userResult.rows.length === 0) {
       return res.status(401).send('User not found');
@@ -63,7 +62,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, username: user.username },
+      { userId: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: '1h' }
     );

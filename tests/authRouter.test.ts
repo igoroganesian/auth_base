@@ -14,8 +14,8 @@ describe('Auth Routes', () => {
   beforeAll(async () => {
     const password = 'password123';
     const hashedPassword = await bcrypt.hash(password, 12);
-    await pool.query(`INSERT INTO users (username, password, email) VALUES ($1, $2, $3)`,
-      ['testuser', hashedPassword, 'test@example.com']);
+    await pool.query(`INSERT INTO users (email, password) VALUES ($1, $2)`,
+      ['test@example.com', hashedPassword]);
   });
 
   afterAll(async () => {
@@ -28,7 +28,6 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          username: 'newuser',
           email: 'newuser@gmail.com',
           password: 'password123'
         });
@@ -36,11 +35,10 @@ describe('Auth Routes', () => {
       expect(res.text).toEqual('Signup successful');
     });
 
-    it('should reject signup with an existing username', async () => {
+    it('should reject signup with an existing email', async () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          username: 'testuser',
           email: 'testuser@gmail.com',
           password: 'password123'
         });
@@ -52,7 +50,6 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          username: 'testuser',
           email: 'testuser.com',
           password: 'password123'
         });
@@ -64,7 +61,6 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          username: 'testuser',
           email: 'testuser@gmail.com',
           password: 'pass'
         });
@@ -79,7 +75,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/login')
         .send({
-          username: 'testuser',
+          email: 'test@example.com',
           password: 'password123'
         });
       expect(res.statusCode).toEqual(200);
@@ -89,7 +85,7 @@ describe('Auth Routes', () => {
     it('should return a valid JWT with successful login', async () => {
       const res = await request(app)
         .post('/auth/login')
-        .send({ username: 'testuser', password: 'password123' });
+        .send({ email: 'test@example.com', password: 'password123' });
       expect(res.statusCode).toEqual(200);
 
       const token = res.body.token;
@@ -105,14 +101,14 @@ describe('Auth Routes', () => {
       }
       expect(decoded).toBeDefined();
       expect(decoded).toHaveProperty('userId');
-      expect(decoded).toHaveProperty('username', 'testuser');
+      expect(decoded).toHaveProperty('email', 'test@example.com');
     });
 
-    it('should reject login with invalid username', async () => {
+    it('should reject login with invalid email', async () => {
       const res = await request(app)
         .post('/auth/login')
         .send({
-          username: 'foo',
+          email: 'test@example.com',
           password: 'password123'
         });
       expect(res.statusCode).toEqual(401);
@@ -123,7 +119,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/login')
         .send({
-          username: 'testuser',
+          email: 'test@example.com',
           password: 'pass'
         });
       expect(res.statusCode).toEqual(401);
