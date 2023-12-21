@@ -129,7 +129,6 @@ describe('Auth Routes', () => {
       expect(res.statusCode).toEqual(401);
       expect(res.text).toContain('Invalid password');
     });
-
   });
 
 });
