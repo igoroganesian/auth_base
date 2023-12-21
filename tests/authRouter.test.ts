@@ -15,7 +15,7 @@ describe('Auth Routes', () => {
     const password = 'password123';
     const hashedPassword = await bcrypt.hash(password, 12);
     await pool.query(`INSERT INTO users (email, password) VALUES ($1, $2)`,
-      ['test@example.com', hashedPassword]);
+      ['test@email.com', hashedPassword]);
   });
 
   afterAll(async () => {
@@ -28,7 +28,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          email: 'newuser@gmail.com',
+          email: 'newuser@email.com',
           password: 'password123'
         });
       expect(res.statusCode).toEqual(201);
@@ -39,7 +39,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          email: 'testuser@gmail.com',
+          email: 'test@email.com',
           password: 'password123'
         });
       expect(res.statusCode).toEqual(409);
@@ -50,7 +50,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          email: 'testuser.com',
+          email: 'testemail.com',
           password: 'password123'
         });
       expect(res.statusCode).toEqual(400);
@@ -61,7 +61,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/signup')
         .send({
-          email: 'testuser@gmail.com',
+          email: 'test@email.com',
           password: 'pass'
         });
       expect(res.statusCode).toEqual(400);
@@ -75,7 +75,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/login')
         .send({
-          email: 'test@example.com',
+          email: 'test@email.com',
           password: 'password123'
         });
       expect(res.statusCode).toEqual(200);
@@ -85,7 +85,7 @@ describe('Auth Routes', () => {
     it('should return a valid JWT with successful login', async () => {
       const res = await request(app)
         .post('/auth/login')
-        .send({ email: 'test@example.com', password: 'password123' });
+        .send({ email: 'test@email.com', password: 'password123' });
       expect(res.statusCode).toEqual(200);
 
       const token = res.body.token;
@@ -101,14 +101,14 @@ describe('Auth Routes', () => {
       }
       expect(decoded).toBeDefined();
       expect(decoded).toHaveProperty('userId');
-      expect(decoded).toHaveProperty('email', 'test@example.com');
+      expect(decoded).toHaveProperty('email', 'test@email.com');
     });
 
     it('should reject login with invalid email', async () => {
       const res = await request(app)
         .post('/auth/login')
         .send({
-          email: 'test@example.com',
+          email: 'testemail.com',
           password: 'password123'
         });
       expect(res.statusCode).toEqual(401);
@@ -119,7 +119,7 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/auth/login')
         .send({
-          email: 'test@example.com',
+          email: 'test@email.com',
           password: 'pass'
         });
       expect(res.statusCode).toEqual(401);
